@@ -1,0 +1,13 @@
+create table gau(ename varchar(10),eid number,sal number);
+
+insert into gau values('a',1,2000);
+insert into gau values('b',2,40000);
+insert into gau values('c',3,197300);
+
+create or replace trigger trio
+before insert or update or delete on gau
+begin
+if((to_char(sysdate,'dy') in ('sat','sun')) or (to_char(sysdate,'HH24:MI')) not between '08:00' and '12:00') then
+raise_application_error(-20001,'not allowed');
+end if;
+end;

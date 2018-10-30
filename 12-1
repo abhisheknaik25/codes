@@ -1,0 +1,19 @@
+create table deepat(dname varchar(20),status varchar(20),deptid number);
+insert into deepat values('comp','okay',1);
+insert into deepat values('it','good',2);
+insert into deepat values('comp','fine',1);
+
+
+create or replace procedure de is
+cursor c1 is
+select * from deepat where deptid=1 and dname='comp';
+vrec c1%rowtype;
+begin
+open c1;
+loop
+fetch c1 into vrec;
+exit when c1%NOTFOUND;
+DBMS_OUTPUT.PUT_LINE(vrec.dname||' '||vrec.status||' '||vrec.deptid);
+end loop;
+end de;
+/
