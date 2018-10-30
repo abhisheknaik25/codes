@@ -1,0 +1,29 @@
+create table eemp(eid varchar(10),ename varchar(10),deptid number);
+
+create table ddept(deptid number);
+insert into ddept values(1);
+insert into ddept values(2);
+insert into ddept values(3);
+
+create or replace function valid(v_deptid in number) return number is
+begin
+for i in(select *from ddept) loop
+if v_deptid=i.deptid then
+return v_deptid;
+end if;
+end loop;
+return 0;
+end;
+/
+
+create or replace procedure newemp(v_deptid in number)is
+v_val number;
+begin
+v_val:=valid(v_deptid);
+if v_val!=0 then
+insert into eemp values('six','gau',v_deptid);
+else
+dbms_output.put_line('INVALID');
+end if;
+end newemp;
+/
