@@ -1,0 +1,108 @@
+SET 3
+1. Create following Tables cust_mstr(cust_no,fname,lname) add_dets(cust_no,add1,add2,state,city,pincode) Retrieve the address of customer Fname as 'xyz' and Lname as 'pqr'.
+SELECT ADD1, ADD2, STATE, CITY, PINCODE
+FROM CUST_MSTR, ADD_DETS
+WHERE ADD_DETS.CUST_NO = (SELECT CUST_NO FROM CUST_NO FROM CUST_MSTR WHERE FNAME = 'XYZ' AND LNAME = 'PQR');
+
+2. Create following Tables cust_mstr(custno,fname,lname) acc_fd_cust_dets(cust_no,acc_fd_no) fd_dets(fd_sr_no,amt) List the customer holding fixed deposit of amount more than 5000.
+SELECT CUST_NO, FNAME, LNAME FROM CUST_DETS, FD_DETS
+WHERE (SELECT ACC_FD_NO FROM ACC_FD_CUST_DETS, CUST_MSTR
+WHERE CUST_MSTR.CUST_NO = ACC_FD_CUST_DETS.CUST_NO) = FD_DETS.FD_SR_NO HAVING AMT > 5000;
+
+3. Create following Tables emp_mstr(e_mpno,f_name,l_name,m_name,dept,desg,branch_no) branch_mstr(name,b_no) List the employee details along with branch names to which they belong.
+SELECT * FROM EMP_MSTR
+RIGHT JOIN BRANCH_MSTR ON EMP_MSTR.BRANCH_NO = BRANCH_MSTR.B_NO;
+
+4. Create following Tables emp_mstr(emp_no,f_name,l_name,m_name,dept) cntc_dets(code_no,cntc_type,cntc_data) List the employee details along with contact details using left outer join & right join.
+SELECT E.*, CNTC_TYPE, CNTC_DATA FROM EMP_MSTR E, CNTC_DETS C WHERE E.EMP_NO(+) = C.CODE_NO(+);
+
+5. Create following Tables cust_mstr(cust_no,fname,lname) add_dets(code_no,pincode) List the customer who do not have bank branches in their vicinity.
+
+ SELECT C.*, PINCODE FROM CUST_MSTR C, ADD_DETS A WHERE C.CUST_NO = A.CODE_NO AND A.PINCODE NOT IN (SELECT PINCODE FROM BANK_DETS)
+
+6. a) Create View on borrower table by selecting any two columns and perform insert update delete operations
+b) Create view on borrower and depositor table by selecting any one column from each table perform insert update delete operations
+c) create updateable view on borrower table by selecting any two columns and perform insert update delete operation
+A
+
+ CREATE VIEW V_BORROW AS
+SELECT CUST_NAME, LOAN_NO FROM BORROWER;
+UPDATE V_BORROW SET CUST_NAME='ABC' WHERE LOAN_NO=112; INSERT INTO V_BORROW VALUES('AXZ',189);
+DELETE FROM V_BORROW WHERE LOAN_NO = 189;
+
+   B
+
+CREATE VIEW V_BOR_DEP AS SELECT B.CUST_NAME,D.ACC_NO FROM BORROWER B,DEPOSITOR D
+WHERE B.CUST_NAME=D.CUST_NAME;
+INSERT INTO V_BOR_DEP VALUES('ABC',10050);
+UPDATE V_BOR_DEP SET ACC_NO=10090 WHERE ACC_NO=10010; DELETE FROM V_BOR_DEP WHERE ACC_NO=10090;
+   
+   
+  C 
+  
+  CREATE VIEW V_BORR AS
+SELECT CUST_NAME,LOAN_NO FROM BORROWER;
+INSERT INTO V_BORR VALUES('ABHISHEK',1098); DELETE FROM V_BORR WHERE LOAN_NO=1098;
+
+
+
+SET 2.2
+Create Table ACCOUNT
+CREATE TABLE ACCOUNT (ACC_NO INTEGER(10) PRIMARY KEY, BRANCH_NAME VARCHAR(20) NOT NULL, BALANCE NUMERIC(10,2) NOT NULL);
+Create Table BRANCH
+CREATE TABLE BRANCH (BRANCH_NAME VARCHAR(20), BRANCH_CITY VARCHAR(20), ASSETS NUMERIC(20,2));
+Create Table DEPOSITOR
+CREATE TABLE CUSTOMER (CUST_NAME VARCHAR(50), ACC_NO INTEGER(10) REFERENCES ACCOUNT(ACC_NO) ON DELETE CASCADE);
+Create Table LOAN
+CREATE TABLE LOAN (LOAN_NO INTEGER(10) PRIMARY KEY, BRANCH_NAME VARCHAR(50), AMMOUNT NUMERIC(10,2) NOT NULL);
+Create Table BORROWER
+CREATE TABLE BORROWER (CUST_NAME VARCHAR(50) PRIMARY KEY, LOAN_NO INTEGER(10) NOT NULL);
+
+Queries
+1. Find the names of all branches in loan relation.
+SELECT DISTINCT BRANCH_NAME FROM LOAN;
+
+2. Find all loan numbers for loans made at Akurdi Branch with loan amount > 12000.
+SELECT LOAN_NO FROM LOAD WHERE BRANCH_NAME = 'AKURDI' AND AMOUNT > 12000;
+
+3. Find all customers who have a loan from bank. Find their names,loan_no and loan amount.
+SELECT CUST_NAME, LOAN_NO, AMOUNT FROM LOAN, BORROWER WHERE LOAN.LOAN_NO = BORROWER.LOAN_NO;
+
+4. List all customers in alphabetical order who have loan from Akurdi branch.
+SELECT CUST_NAME FROM BORROWER, LOAN WHERE BORROWER.LOAN_NO = LOAN.LOAN_NO AND BRANCH_NAME = 'AKURDI';
+       
+5. Find all customers who have an account or loan or both at bank.
+ (SELECT CUST_NAME FROM BORROWER) UNION (SELECT CUST_NAME FROM LOAN);
+
+6. Find all customers who have both account and loan at bank.
+SELECT CUST_NAME FROM LOAN, BORROWER WHERE LOAN.LOAN_NO = BORROWER.LOAN_NO;
+
+7. Find all customer who have account but no loan at the bank.
+(SELECT CUST_NAME FROM BORROWER) EXCEPT (SELECT CUST_NAME FROM LOAN);
+
+8. Find average account balance at Akurdi branch.
+SELECT BRANCH_NAME AS 'BRANCH', AVG(BALANCE) FROM ACCOUNT WHERE BRANCH_NAME = 'AKURDI';
+
+9. Find the average account balance at each branch
+SELECT BRANCH_NAME, AVG(BALANCE) FROM ACCOUNT GROUP BY BRANCH_NAME;
+
+10. Find no. of depositors at each branch.
+SELECT COUNT( * ) FROM DEPOSITOR, ACCOUNT WHERE DEPOSITOR.ACC_NO = ACCOUNT.ACC_NO GROUP BY BRANCH_NAME;
+
+11. Find the branches where average account balance > 12000.
+SELECT BRANCH_NAME FROM ACCOUNT GROUP BY BRANCH_NAME HAVING AVG(BALANCE) > 12000;
+
+12. Find number of tuples in customer relation.
+SELECT COUNT( * ) FROM CUSTOMER;
+
+13. Calculate total loan amount given by bank.
+SELECT COUNT(AMOUNT) FROM LOAN;
+
+14. Delete all loans with loan amount between 1300 and 1500.
+DELETE FROM LOAN WHERE AMOUNT BETWEEN 1300 AND 1500;
+
+15. Delete all tuples at every branch located in Nigdi.
+DELETE FROM ACCOUNT WHERE BRANCH_NAME IN (SELECT * FROM BRANCH WHERE BRANCH_CITY = 'NIGDI');
+
+16. Create synonym for customer table as cust.
+CREATE VIEW CUST AS SELECT * FROM CUSTOMER;
