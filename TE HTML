@@ -1,0 +1,25 @@
+<!Doctype html>
+<head>
+<title> TE COMP TIMETABLE </title>
+<head>
+<body>
+<h2> TIME TABLE </h2>
+<table border = 1 bordercolor="red" width = 60% height =60% cellspacing= 2 cellpadding= 10 bgcolor="white" align ="center">
+
+	<tr>
+		<th>Time/Day</th>
+		<th>8:30 to 9:30</th>
+		<th>9:30 to 10:30</th>
+		<th>10:45 to 11:45</th>
+		<th>11:45 to 12:45</th>
+	</tr>
+
+	<tr>
+		<th>Monday<strong></strong></th>
+		<td>Spos
+		     (D406)</td>
+		<td>WT</td>
+		<td>SMD</td>
+		<td>IOT</td>
+	</tr>
+
