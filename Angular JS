@@ -1,0 +1,177 @@
+var app=angular.module('myApp',[]);
+
+app.controller('cont',function($scope){
+	$scope.name = "Quantity";
+	$scope.invoice={
+		number:10,
+		tax:14,
+		items:[{
+			description:"",
+			quantity:10,
+			cost:300
+		}],
+	};
+
+	$scope.currency_symbol=[{
+		name:'Indian Rupee',
+		currency:'₹'
+	},
+	{
+		name:'USD',
+		currency:'$'
+	},
+	{
+		name:'Euro',
+		currency:'€'
+	}];
+
+	$scope.addItem = function(){
+		$scope.invoice.items.push([{
+		description:"description",
+		quantity:1,
+		cost:1
+		}]);
+	}
+
+	$scope.removeItem = function(m){
+		$scope.invoice.items.splice($scope.invoice.items.indexOf(m),1);
+	}
+
+	$scope.subTotal=function(){
+		var total=0.0;
+		angular.forEach($scope.invoice.items, function(item,key){
+			total += item.quantity * item.cost;
+		});
+		return total;
+	};
+
+	$scope.calcuteTax=function(){
+		return (($scope.subTotal()*$scope.invoice.tax)/100);
+	};
+
+	$scope.grandTotal= function(){
+		return ($scope.subTotal()+$scope.calcuteTax());
+	};
+});
+
+
+
+
+
+<!doctype html>
+<head>
+  <title>Simple Invoicing</title>
+  <meta charset='utf-8'>
+  <meta name="description" content="AngularJS and Angular Code Example for creating Invoices and Invoicing Application">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
+  <script type="text/javascript" src="angular.min.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+</head>
+
+<body ng-app="myApp" ng-controller="cont">
+  <div class="main1">
+    <div="customer"><select ng-init="currencySymbol=currency_symbol[1]" ng-model="currencySymbol" ng-options="currency.name+' '+currency.currency for currency in currency_symbol"></select></div>
+  </div>
+
+  <div class="main2">
+    <table border=1 width=100%>
+      <th></th>
+      <th>Description</th>
+      <th>{{name}}</th>
+      <th>Cost{{' '+currencySymbol.currency}}</th>
+      <th>Total</th>
+      <tr ng-repeat="item in invoice.items">
+        <td text-align="center"><a class="btn" href="" ng-click="removeItem()"><strong>X</strong></a></td>
+        <td><input type="text" ng-model="item.description" placeholder="Description"></td>
+        <td><input type="number" ng-model="item.quantity" placeholder="0"></td>
+        <td><input type="number" ng-model="item.cost" placeholder="0"></td>
+        <td placeholder="0">{{item.quantity*item.cost}}</td>
+      </tr>
+      <tr>
+        <td text-align="center" colspan="5"><a class="btn" style="background-color:green;" href ng-click="addItem()">+</a></td>
+      </tr>
+      <tr>
+        <td text-align="center"></td>
+        <td></td>
+        <td></td>
+        <td>Sub Total</td>
+        <td>
+          <p>{{subTotal()}}</p>
+        </td>
+      </tr>
+      <tr>
+        <td text-align="center"></td>
+        <td></td>
+        <td>Tax</td><td><input type="number" ng-model="invoice.tax"></td>
+        <td>
+          <p>{{calcuteTax()}}</p>
+        </td>
+      </tr>
+      <tr>
+        <td text-align="center"></td>
+        <td></td>
+        <td></td>
+        <td>Grand Total</td>
+        <td>
+          <p>{{grandTotal()}}</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+
+
+body {
+	font-family: Open Sans;
+	font-size: 18px;
+}
+
+.main1 {
+	width:80%;
+	margin: 0px auto;
+}
+
+.main2 {
+	width: 80%;
+	margin: 0px auto;
+}
+
+select {
+	padding: 10px 10px;
+	margin: 15px 0px;
+}
+
+th {
+	padding: 10px 10px;
+}
+
+td {
+	padding: 10px 10px;
+}
+
+table {
+	text-align: center;
+}
+
+.ng-binding {
+	margin: 0px !important;
+}
+
+input {
+	width: 100%;
+	border: none;
+	text-align: center;
+	font-size: 18px;
+}
+
+.btn {
+
+    padding: 5px 13px;
+    color: #fff;
+    font-weight: 700;
+    background: red;
+    text-decoration: none;
+    border-radius: 8px;
+
+}
+
