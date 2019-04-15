@@ -1,0 +1,137 @@
+registration.html
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Registration Form</title>
+	<script type="text/javascript">
+		function val()
+		{
+			var n = document.f1.name.value;
+			var u = document.f1.usertype.value;
+			var c = document.f1.country.value;
+			var e = document.f1.mail.value;
+			var no = document.f1.num.value;
+			var dotpos = e.lastIndexOf('.');
+			var atpos = e.indexOf('@');
+			var sppos = e.indexOf(' ');
+			if(n == "" || u == "" || c == "" || e == "" || no == "")
+			{
+				alert("Please Enter All Fields");
+				return false;
+			}
+			if(dotpos < 1 || atpos < 1 || (dotpos - atpos) < 2 || sppos != -1 || (e.length-dotpos) == 1)
+			{
+				alert("Invalid Mail Address");
+				return false;
+			}
+			if(no.length != 10 || isNaN(no))
+			{
+				alert("Please enter valid phone number");
+				return false;
+			}
+			else
+			{
+				alert("Success");
+				return true;
+			}
+		}
+	</script>
+</head>
+<body>
+	<table>
+		<form action="payment.html" onsubmit="return(val())" name="f1">
+			<tr>
+			<td>Name - </td>
+			<td><input type="text" name="name"></td>	
+			</tr>
+			<tr>
+			<td>Employment - </td>
+			<td><select name="usertype">
+				<option>Student</option>
+				<option>Faculty</option>
+				<option>Professional</option>
+				<option>Company Representative</option>
+			</select></td>
+			</tr>
+			<tr>
+				<td>Country name - </td>
+				<td><input type="text" name="country"></td>
+			</tr>
+			<tr>
+				<td>Email Address - </td>
+				<td><input type="text" name="mail"></td>
+			</tr>
+			<tr>
+				<td>Mobile Number - </td>
+				<td><input type="text" name="num"></td>
+			</tr>
+			<tr>
+				<td><input type="submit" value="register"></td>
+			</tr>
+		</form>	
+	</table>
+</body>
+</html>
+
+success.html
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Success</title>
+</head>
+<body>
+	Successful!
+</body>
+</html>
+
+payment.html
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Payment Gateway</title>
+	<script type="text/javascript">
+		function val()
+		{
+			var c = document.f2.card.value;
+			var cv = document.f2.cvv.value;
+			if(c == "" || cv == "")
+			{
+				alert("Enter all fields");
+				return false;
+			}
+			if(c.length != 16)
+			{
+				alert("Enter valid Card number");
+				return false;
+			}
+			if(cv.length < 3 || cv.length > 4)
+			{
+				alert("Enter valid CVV");
+				return false;
+			}
+		}
+	</script>
+</head>
+<body>
+	<table>
+		<form action="success.html" name="f2" onsubmit="return(val())">
+			<tr>
+				<td>Credit/Debit Card -</td>
+				<td><input type="number" name="card"></td>
+			</tr> 
+			<tr>
+				<td>CVV</td>
+				<td><input type="number" name="cvv"></td>
+			</tr>
+			<tr>
+				<td><input type="submit" value="Pay"></td>
+			</tr>
+		</form>	
+	</table>
+</body>
+</html>
+
+
