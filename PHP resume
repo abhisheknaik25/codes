@@ -1,0 +1,175 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Page</title>
+		<link rel="stylesheet" href="style.css">
+		<script type="text/javascript" src="script.js"></script>
+	</head>
+
+	<body>
+		<div class="header"></div>
+		<div class="container" id="container">
+			<h1>Marksheet Form</h1>
+
+			<form class="form" action="resume.php" name="login" onsubmit="return true;" method="post">
+				<input class="inp" type="text" id="name" name="name" placeholder="Enter Name" oninput="validatename()">
+				<input class="inp" type="text" id="obj" name="obj" placeholder="Enter Career Objective" oninput="validatename()">
+				<div class="edu" id="edu">
+					<input class="inp" type="text" id="edu1" name="edu1" placeholder="Enter Name of Institution #1" oninput="validatename()">
+					<input class="inp" type="text" id="eduy1" name="eduy1" placeholder="Enter Year #1" oninput="validatename()">
+					<input class="inp" type="text" id="edud1" name="edud1" placeholder="Enter Description #1" oninput="validatename()">
+				</div>
+				<input class="submit" type="button" value="Add Educational Institute" onclick="addfield()">
+				<input class="submit" type="submit" value="Submit">
+			</form>
+		</div>
+	</body>
+</html>
+
+php
+
+<!doctype html>
+<html>
+	<head>
+		<title>Page</title>
+		<link rel="stylesheet" href="style.css">
+		<script type="text/javascript" src="script.js"></script>
+	</head>
+
+	<body>
+		<div class="header"></div>
+		<div class="container" id="container">
+			<table class="table" class="border:none !important;">
+				<tr>
+					<td width="25%" style="text-align:left;">4, Magalkunj Apartment, Lane No. 7, Shikshak Nagar, Pune, 411038
+					<td width="50%" style="font-size:56px;text-transform:uppercase;"><?php echo($_POST['name']); ?>
+					<td width="25%" style="text-align:right;">+91-88303-95599</br>me@ashwin.dev</br>https://ashwin.dev
+				</tr>
+				<?php if(isset($_POST['obj']) && !empty($_POST['obj'])){?>
+					<tr style="border-bottom: 1px solid #4991d5;">
+						<td width="100%" colspan="3" style="text-align:left;">CAREER OBJECTIVE
+					</tr>
+					<tr style="">
+						<td width="100%" colspan="3" style="text-align:left;"><?php echo($_POST['obj']); ?>
+					</tr>
+				<?php } ?>
+				<tr style="border-bottom: 1px solid #4991d5;">
+					<td width="100%" colspan="3" style="text-align:left;">EDUCTATION
+				</tr>
+				<!--EDUCTATION-->
+				<tr>
+					<td colspan="2" style="width:75%;font-weight:700;text-align:left;">Maharashtra Institute of Technology College of Engineering, Pune
+					<td style="font-weight:700;width:25%;text-align:right;">2020
+				</tr>
+				<tr>
+					<td colspan="3" style="width:100%;text-align:left;padding:0px 10px">— Bachelor of Engineering in Computer Science and Engineering, SGPA: 9.116 / 10
+				</tr>
+				<tr>
+					<td colspan="3" style="width:100%;text-align:left;padding:0px 10px">— Relevant Coursework: Object Oriented Programming, Advanced Data Structures and Algorithms, Computer Networks, Discrete Mathematics, Computer Graphics, Database Management Systems, Operating Systems and Microprocessors.
+				</tr>
+
+				<tr>
+					<td colspan="2" style="width:75%;font-weight:700;text-align:left;">City International School, Wanowrie, Pune
+					<td style="font-weight:700;width:25%;text-align:right;">2016
+				</tr>
+				<tr>
+					<td colspan="3" style="width:100%;text-align:left;padding:0px 10px">— CBSE 12th Percentage — 87.2%
+				</tr>
+				<tr>
+					<td colspan="2" style="width:75%;font-weight:700;text-align:left;"><?php echo($_POST['edu1']) ?>
+					<td style="font-weight:700;width:25%;text-align:right;"><?php echo($_POST['eduy1']) ?>
+				</tr>
+				<tr>
+					<td colspan="3" style="width:100%;text-align:left;padding:0px 10px">— <?php echo($_POST['edud1']) ?>
+				</tr>
+				<tr style="border-bottom: 1px solid #4991d5;">
+					<td width="100%" colspan="3" style="text-align:left;">PROJECTS
+				</tr>
+				<?php $GLOBALS['count'] = 1; while(isset($_POST['edu'.$GLOBALS['count']])) {?>
+					<tr>
+						<td colspan="2" style="width:75%;font-weight:700;text-align:left;"><?php echo($_POST['edu'.$count]) ?>
+						<td style="font-weight:700;width:25%;text-align:right;"><?php echo($_POST['eduy'.$count]) ?>
+					</tr>
+					<tr>
+						<td colspan="3" style="width:100%;text-align:left;padding:0px 10px">— <?php echo($_POST['edud'.$count]) ?>
+					</tr>
+				<?php $count = $count + 1;}?>
+				<tr style="border-bottom: 1px solid #4991d5;">
+					<td width="100%" colspan="3" style="text-align:left;">ACHEIVEMENTS
+				</tr>
+				<tr>
+					<td colspan="3" style="width:100%;text-align:left;padding:0px 10px">— CGPA 9.116 / 10
+				</tr>
+				<tr>
+					<td colspan="3" style="width:100%;text-align:left;padding:0px 10px">— CGPA 9.116 / 10
+				</tr>
+				<tr>
+					<td colspan="3" style="width:100%;text-align:left;padding:0px 10px">— CGPA 9.116 / 10
+				</tr>
+			</table>
+		</div>
+	</body>
+</html>
+
+
+JS
+
+var count = 1;
+
+function validate() {
+	var total = 0;
+	for(var i = 1; i <= count; i++) {
+		var temp = document.getElementById("m"+i).value;
+		total += parseFloat(temp);
+	};
+	//alert(total);
+	create();
+	return true;
+}
+
+function create() {
+	var tabler = "";
+	var name = document.getElementById("name").value;
+	tabler += "<table class='table'><tr><td>Name</td><td colspan=\"2\">"+name+"</td></tr><tr><td>Subject Name</td><td>Marks Obtained</td><td>Maximum Marks</td><tr>";
+
+	var total = 0;
+	for(var i = 1; i <= count; i++) {
+		var n = document.getElementById("n"+i).value;
+		var m = document.getElementById("m"+i).value;
+		tabler += "<tr><td>"+n+"</td><td>"+m+"</td><td>100</td></tr>";
+		total += parseInt(m);
+	};
+	tabler += "<tr><td colspan='2'>Total Marks</td><td>"+total+"</td></tr>";
+	tabler += "<tr><td colspan='2'>Percentage</td><td>"+total/count+"%</td></tr>";
+	tabler += "</table>"
+	document.getElementById("container").innerHTML = tabler;
+}
+
+function addfield() {
+	count = count + 1;
+	document.getElementById("edu").insertAdjacentHTML("beforeend","<input class='inp' type='text' id='edu"+count+"' name='edu"+count+"' placeholder='Enter Name of Institution #"+count+"' oninput='validatename()'>");
+	document.getElementById("edu").insertAdjacentHTML("beforeend","<input class='inp' type='text' id='eduy"+count+"' name='eduy"+count+"' placeholder='Enter Year #"+count+"' oninput='validatename()'>");
+	document.getElementById("edu").insertAdjacentHTML("beforeend","<input class='inp' type='text' id='edud"+count+"' name='edud"+count+"' placeholder='Enter Description #"+count+"' oninput='validatename()'>");
+}
+
+function validatename() {
+	var name = document.login.name.value;
+	var re = /^[a-zA-Z]+$/;
+	if(re.test(name) && name.length >= 3) {
+		document.getElementById("name").style.border = "1px solid green";
+		return true;
+	}
+	document.getElementById("name").style.border = "1px solid red";
+	return false;
+}
+
+function validatemarks(i) {
+	var marks = document.getElementById("m"+i).value;
+	var re = /^[0-9]+$/;
+	if(re.test(marks)) {
+		document.getElementById("m"+i).style.border = "1px solid green";
+		return true;
+	}
+	document.getElementById("m"+i).style.border = "1px solid red";
+	return false;
+}
