@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="book.xsl" type="text/xsl" ?>
+<bookstore>
+	<book category="cooking">
+		<title>Everyday Italian</title>
+		<author>Giada De Laurentiis</author>
+		<year>2005</year>
+		<price>30.00</price>
+	</book>
+
+	<book category="children">
+		<title>Harry Potter</title>
+		<author>J K. Rowlng</author>
+		<year>2005</year>
+		<price>29.99</price>
+	</book>
+
+	<book category="web">
+		<title>XQuery Kick Start</title>
+		<author>James McGovern</author>
+		<year>2003</year>
+		<price>49.99</price>
+	</book>
+
+	<book category="web" cover="paperback">
+		<title>Learning XML</title>
+		<author>Erik T. Ray</author>
+		<year>2003</year>
+		<price>39.95</price>
+	</book>
+</bookstore>
+
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+	<xsl:template match="/bookstore">
+		<html>
+			<head>
+				<title>Datastorage Using XML</title>
+				<link rel="stylesheet" href="./style.css"></link>
+			</head>
+			<body>
+				<h1 class="tx">Datastorage Using XML</h1>
+				<table border="1" width="100%" style="width:100%;text-align:center;font-family:Open Sans;">
+					<tr bgcolor="#9acd32">
+						<th>Title</th>
+						<th>Author</th>
+						<th>Year</th>
+						<th>Price</th>
+					</tr>
+
+					<xsl:for-each select="book">
+						<tr>
+							<td><xsl:value-of select="title"/></td>
+							<td><xsl:value-of select="author"/></td>
+							<td><xsl:value-of select="year"/></td>
+							<td><xsl:value-of select="price"/> $</td>
+						</tr>
+					</xsl:for-each>
+				</table>
+			</body>
+		</html>
+	</xsl:template>
+</xsl:stylesheet>
+
+
+tr {
+	font-size: 15px;
+}
+
+td, th {
+	padding: 10px 5px;
+}
+
+h1.tx {
+	text-align: center;
+	font-family: Open Sans;
+}
+
+
+
