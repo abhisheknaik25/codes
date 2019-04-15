@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Page</title>
+		<link rel="stylesheet" href="style.css">
+		<script type="text/javascript" src="script.js"></script>
+	</head>
+
+	<body>
+		<div class="header"></div>
+		<div class="container" id="container">
+			<h1>Marksheet Form</h1>
+
+			<form class="form" name="login" action="#" onsubmit="validate();return false;" method="post">
+				<input class="inp" type="text" id="name" name="name" placeholder="Enter Name" oninput="validatename()">
+				<div class="marks" id="marks">
+					<input class="inpleft" type="text" id="n1" name="n1" placeholder="Enter Subject Name #1" oninput="validatesub(1)">
+					<input class="inpright" type="text" id="m1" name="m1" placeholder="Enter Marks #1" oninput="validatemarks(1)">
+				</div>
+				<input class="submit" type="button" value="Add Subject" onclick="addfield()">
+				<input class="submit" type="submit" value="Submit">
+			</form>
+		</div>
+	</body>
+</html>
+
+
+var count = 1;
+
+function validate() {
+	var total = 0;
+	for(var i = 1; i <= count; i++) {
+		var temp = document.getElementById("m"+i).value;
+		total += parseFloat(temp);
+	};
+	//alert(total);
+	create();
+	return true;
+}
+
+function create() {
+	var tabler = "";
+	var name = document.getElementById("name").value;
+	tabler += "<table class='table'><tr><td>Name</td><td colspan=\"2\">"+name+"</td></tr><tr><td>Subject Name</td><td>Marks Obtained</td><td>Maximum Marks</td><tr>";
+
+	var total = 0;
+	for(var i = 1; i <= count; i++) {
+		var n = document.getElementById("n"+i).value;
+		var m = document.getElementById("m"+i).value;
+		tabler += "<tr><td>"+n+"</td><td>"+m+"</td><td>100</td></tr>";
+		total += parseInt(m);
+	};
+	tabler += "<tr><td colspan='2'>Total Marks</td><td>"+total+"</td></tr>";
+	tabler += "<tr><td colspan='2'>Percentage</td><td>"+total/count+"%</td></tr>";
+	tabler += "</table>"
+	document.getElementById("container").innerHTML = tabler;
+}
+
+function addfield() {
+	count = count + 1;
+	document.getElementById("marks").insertAdjacentHTML("beforeend","<input class=\"inpleft\" type=\"text\" id=\"n"+ count +"\" name=\"n" + count + "\" placeholder=\"Enter Subject Name #"+ count +"\" oninput=\"validatesub("+count+")\">");
+	document.getElementById("marks").insertAdjacentHTML("beforeend","<input class=\"inpright\" type=\"text\" id=\"m"+ count +"\" name=\"m" + count + "\" placeholder=\"Enter Marks #"+ count +"\" oninput=\"validatemarks("+count+")\">");
+}
+
+function validatename() {
+	var name = document.login.name.value;
+	var re = /^[a-zA-Z]+$/;
+	if(re.test(name) && name.length >= 3) {
+		document.getElementById("name").style.border = "1px solid green";
+		return true;
+	}
+	document.getElementById("name").style.border = "1px solid red";
+	return false;
+}
+
+function validatemarks(i) {
+	var marks = document.getElementById("m"+i).value;
+	var re = /^[0-99]+$/;
+	if(re.test(marks)) {
+		document.getElementById("m"+i).style.border = "1px solid green";
+		return true;
+	}
+	document.getElementById("m"+i).style.border = "1px solid red";
+	return false;
+}
+
+
+
+.container {
+    width: 700px;
+    margin: -60px auto;
+	height: 100%;
+	font-family: Open Sans;
+	text-align: center;
+	font-size: 18px;
+	background: #fff;
+	padding: 10px 80px 40px 50px;
+}
+
+.header {
+	width:100%;
+	height: 200px;
+	background: #4b8be9;
+}
+
+.inpleft {
+    padding: 15px 10px;
+    margin: 5px 10px 5px 5px;
+    width: 44.5%;
+	font-size: 16px;
+}
+
+.marks {
+	width:106.5%;
+}
+
+.inpright {
+    padding: 15px 10px;
+    margin: 5px 10px 5px 0px;
+    width: 44.5%;
+	font-size: 16px;
+}
+
+.inp {
+	width: 100%;
+	padding: 15px 10px;
+	margin: 5px 10px;
+	font-size: 16px;
+}
+
+.submit {
+	width: 103.5%;
+	padding: 15px 10px;
+	margin: 5px 10px;
+	font-size: 16px;
+	background: #4b8be9;
+	color: #fff;
+	font-size: 16px;
+	text-transform: uppercase;
+	font-family: Segoe UI;
+}
+
+body {
+	background: #ccc;
+	height: 100%;
+}
+
+.table {
+	width: 103.5%;
+	margin-top: 40px;
+	border-collapse: collapse;
+}
+
+td {
+	padding: 10px;
+	border: 1px solid #ccc;
+}
