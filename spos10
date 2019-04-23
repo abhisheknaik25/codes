@@ -1,0 +1,163 @@
+// Shortest Job First Preemptive
+
+import java.util.*;
+
+public class SJF {
+
+    public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+
+        System.out.print("Enter number of processes: ");
+        int n = in.nextInt();
+        int[] pid = new int[n];
+        int[] at = new int[n];
+        int[] bt = new int[n];
+        int[] ct = new int[n];
+        int[] tat = new int[n];
+        int[] wt = new int[n];
+        int[] k = new int[n]; // copy of bt
+        boolean[] f = new boolean[n];
+
+        for (int i = 0; i < n; i++) {
+            System.out.print("Enter arrival time for process " + (i+1) + ": ");
+            at[i] = in.nextInt();
+            System.out.print("Enter burst time for process " + (i+1) + ": ");
+            bt[i] = in.nextInt();
+            pid[i] = i+1;
+            k[i] = bt[i];
+        }
+
+        in.close();
+
+        int completed = 0;
+        int st = 0; // system time
+        while (true) {
+            if (completed == n)
+                break;
+
+            int min = 999999;
+            int c = n;
+            for (int i = 0; i < n; i++) {
+                if ((at[i] <= st) && (!f[i]) && (bt[i] < min)) {
+                    min = bt[i];
+                    c = i;
+                }
+            }
+
+            if (c == n)
+                st++;
+            else {
+                bt[c]--;
+                st++;
+                if (bt[c] == 0) {
+                    ct[c] = st;
+                    f[c] = true;
+                    completed++;
+                }
+            }
+        }
+
+        float total_wt = 0;
+        float total_tat = 0;
+        for (int i = 0; i < n; i++) {
+            tat[i] = ct[i] - at[i];
+            wt[i] = tat[i] - k[i];
+            total_wt += wt[i];
+            total_tat += tat[i];
+        }
+
+        System.out.println("\nPID\tAT\tBT\tCT\tTAT\tWT");
+        for (int i = 0; i < n; i++) {
+            System.out.println(String.format("%d\t%d\t%d\t%d\t%d\t%d", pid[i], at[i], k[i], ct[i], tat[i], wt[i]));
+        }
+
+        System.out.println("\nAverage waiting time: " + (total_wt / n));
+        System.out.println("Average turn around time: " + (total_tat / n));
+    }
+
+}
+
+
+
+import java.util.*;
+
+public class PRIORITY {
+    public static void main(String [] args)
+    {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter no. of processes");
+        int n=sc.nextInt();
+        int [] pid=new int[n];
+        int [] btime=new int[n];
+        int [] atime=new int[n];
+        int wtime[]=new int[n];
+        int [] ttime=new int[n];
+        int [] ctime=new int[n];
+        int [] prio=new int[n];
+        int avgw=0;
+        int avgt=0;
+        int tot=0;
+        int k[] =new int[n];
+        int c;
+        int [] f=new int[n];
+        for(int i=0;i<n;i++)
+        {
+            pid[i]=i+1;
+            System.out.print("Enter arrival time : ");
+            atime[i]=sc.nextInt();
+            System.out.print("Enter priority time : ");
+            prio[i]=sc.nextInt();
+            System.out.println("Enter burst time : ");
+            btime[i]=sc.nextInt();
+            f[i]=0;
+            k[i]=btime[i];
+        }
+        int st=0;
+        int min;
+        int temp;
+        while(true)
+        {
+            min=99;
+            c=n;
+            if(tot==n)
+                break;
+            for(int i=0;i<n;i++)
+            {
+                if(atime[i]<=st  &&  f[i]==0  && prio[i]<min) {
+                    min = prio[i];
+                    c = i;
+                }
+            }
+            if(c==n){
+                st++;
+                System.out.println(st+ " ST ");
+            }
+            else
+            {
+                st+=btime[c];
+
+                    f[c]=1;
+                    tot++;
+                    ctime[c]=st;
+
+                //for(int i=0;i<btime[c];i++)System.out.println(i+ " ST \tp"+(c+1));
+                //btime[c]=0;
+            }
+        }
+        for (int i=0;i<n;i++)
+        {
+            ttime[i]=ctime[i]-atime[i];
+            avgt+=ttime[i];
+            wtime[i]=ttime[i]-k[i];
+            avgw+=wtime[i];
+        }
+        System.out.println("\npid  arrival   prio   brust  complete turn waiting");
+        for(int i=0;i<n;i++)
+        {
+            System.out.println(pid[i]+"\t"+atime[i]+"\t"+prio[i]+"\t"+btime[i]+"\t"+ctime[i]+"\t"+ttime[i]+"\t"+wtime[i]);
+        }
+        System.out.println("Waitning : "+avgw);
+        System.out.println("Turn Around : "+avgt);
+    }
+}
+
