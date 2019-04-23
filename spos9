@@ -1,0 +1,163 @@
+import java.util.*;
+ 
+public class FCFS {
+	public static void main(String args[])
+	{
+		Scanner sc = new Scanner(System.in);
+		System.out.println("enter no of process: ");
+		int n = sc.nextInt();
+		int pid[] = new int[n];   // process ids
+		int ar[] = new int[n];     // arrival times
+		int bt[] = new int[n];     // burst or execution times
+		int ct[] = new int[n];     // completion times
+		int ta[] = new int[n];     // turn around times
+		int wt[] = new int[n];     // waiting times 
+		int temp;
+		float avgwt=0,avgta=0;
+ 
+		for(int i = 0; i < n; i++)
+		{
+			System.out.println("enter process " + (i+1) + " arrival time: ");
+			ar[i] = sc.nextInt();
+			System.out.println("enter process " + (i+1) + " brust time: ");
+			bt[i] = sc.nextInt();
+			pid[i] = i+1;
+		}
+ 
+		//sorting according to arrival times
+		for(int i = 0 ; i <n; i++)
+		{
+			for(int  j=0;  j < n-(i+1) ; j++)
+			{
+				if( ar[j] > ar[j+1] )
+				{
+					temp = ar[j];
+					ar[j] = ar[j+1];
+					ar[j+1] = temp;
+
+					temp = bt[j];
+					bt[j] = bt[j+1];
+					bt[j+1] = temp;
+					
+					temp = pid[j];
+					pid[j] = pid[j+1];
+					pid[j+1] = temp;
+				}
+			}
+		}
+		
+		// finding completion times
+		for(int  i = 0 ; i < n; i++)
+		{
+			if( i == 0)
+			{	
+				ct[i] = ar[i] + bt[i];
+			}
+			else
+			{
+				if( ar[i] > ct[i-1])
+				{
+					ct[i] = ar[i] + bt[i];
+				}
+				else
+					ct[i] = ct[i-1] + bt[i];
+			}
+			ta[i] = ct[i] - ar[i] ;          // turnaround time= completion time- arrival time
+			wt[i] = ta[i] - bt[i] ;          // waiting time= turnaround time- burst time
+			avgwt += wt[i] ;               // total waiting time
+			avgta += ta[i] ;               // total turnaround time
+		}
+		
+		System.out.println("\npid  arrival  brust  complete turn waiting");
+		for(int  i = 0 ; i< n;  i++)
+		{
+			System.out.println(pid[i] + "  \t " + ar[i] + "\t" + bt[i] + "\t" + ct[i] + "\t" + ta[i] + "\t"  + wt[i] ) ;
+		}
+		sc.close();
+		System.out.println("\naverage waiting time: "+ (avgwt/n));     // printing average waiting time.
+		System.out.println("average turnaround time:"+(avgta/n));    // printing average turnaround time.
+	}
+}
+
+
+import java.util.*;
+public class RR {
+
+	public static void main(String[] args) {
+		Scanner sc=new Scanner(System.in);
+		
+		System.out.println("Enter the no. of process");
+		int np=sc.nextInt();
+		int pid[]=new int[np]; //process ids
+		int at[]=new int[np];	//arrival time
+		int bt[]=new int[np];	//burst time
+		int wt[]=new int[np];	//waiting time
+		int tt[]=new int[np];	//total time
+		int ct[]=new int[np];	//completion time
+		int rt[]=new int[np];	//round time
+		int f[]=new int[np];
+		int quantum,avgtt=0,avgwt=0;
+
+		for(int i=0;i<np;i++)
+		{
+			pid[i]=i+1;
+			System.out.println("Enter process "+(i+1)+"  arrival time");
+			at[i]=sc.nextInt();
+			System.out.println("Enter process "+(i+1)+"  burst time");
+			bt[i]=sc.nextInt();
+			rt[i]=bt[i];
+			f[i]=0;
+		}
+		System.out.println("Enter the time quantum");
+		quantum=sc.nextInt();
+		int total=0,st=0;
+		while(true)
+		{
+			int min=99,c=np;
+			if(total==np)
+				break;
+			
+			for(int i=0;i<np;i++)
+			{
+				if(at[i]<=st && f[i]==0)
+				{
+					c=i;
+					if(rt[i]>quantum)
+					{
+						rt[i]-=quantum;
+						st+=quantum;
+					}
+					else
+					{
+						st+=rt[i];
+						ct[i]=st;
+						rt[i]=0;
+						f[i]=1;
+						total++;
+					}
+					
+				}
+			}
+			if(c==np)
+				st++;
+		}
+		
+		for(int i=0;i<np;i++)
+		{
+			tt[i]=ct[i]-at[i];
+			wt[i]=tt[i]-bt[i];
+			avgtt+=tt[i];
+			avgwt+=wt[i];
+		}
+		
+		System.out.println("\n pid    Arrival    Burst    Completion    Turnaround    Waiting");
+		for(int i=0;i<np;i++)
+		{
+			System.out.println("\n "+pid[i]+"         "+at[i]+"         "+bt[i]+"           "+ct[i]+"            "+tt[i]+"           "+wt[i]);
+		}
+		
+		System.out.println("\n Average Waiting time"+avgwt/np);
+		System.out.println("\n Average tt time"+avgtt/np);
+
+	}
+}
