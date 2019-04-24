@@ -86,3 +86,7 @@ input.txt
 int a,b,c,d=10;
 
 
+yacc -d declaration.y
+lex declaration.l
+gcc lex.yy.c y.tab.c
+./a.out input
