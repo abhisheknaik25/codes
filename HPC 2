@@ -1,0 +1,248 @@
+SUM
+
+#include<iostream>
+#include<stdio.h>
+#include<cuda.h>
+#include<math.h>
+
+#define SIZE 5
+
+using namespace std;
+
+__global__ void sum(int *input,int *n)
+{
+	int tid=threadIdx.x;
+	int num_of_threads=blockDim.x;
+	float tsize=(float)num_of_threads;
+
+	int step_size=1;
+	while(num_of_threads>0)
+	{
+		if(tid<num_of_threads)
+		{
+			int fst=tid*step_size*2;
+			int snd=fst+step_size;
+
+			if(snd<*n)
+			{
+				printf("fst = %d %d snd = %d %d\n",fst,input[fst],snd,input[snd]);
+				input[fst]+=input[snd];
+			}
+		}
+
+		step_size*=2;
+		if(num_of_threads!=1)
+		{
+			
+			tsize/=2;
+			num_of_threads=(int)ceil(tsize);
+	
+		}
+		else
+		{
+			num_of_threads=0;
+		}
+
+	}
+}
+
+int main()
+{
+
+	int count;
+	
+	cout<<"Enter number of elements\n";
+	cin>>count;
+	int *c=&count;
+	const int size=count*sizeof(int);
+	
+	int a[count];
+	for(int i=0;i<count;i++)
+	{
+		a[i]=rand()%100;
+	}
+
+	for(int i=0;i<count;i++)
+	{
+		cout<<a[i]<<endl;
+	}
+
+	int *d;
+	int *n;
+
+	cudaMalloc(&d,size);
+	cudaMalloc(&n,sizeof(int));
+	cudaMemcpy(d,a,size,cudaMemcpyHostToDevice);
+	cudaMemcpy(n,c,sizeof(int),cudaMemcpyHostToDevice);
+	if(count%2==0)
+	{
+		sum<<<1,count/2>>>(d,n);
+	}else
+	{
+		sum<<<1,(count/2)+1>>>(d,n);
+	}
+	int result;
+	cudaMemcpy(&result,d,sizeof(int),cudaMemcpyDeviceToHost);
+
+	cout<<"sum = "<<result<<endl;
+	cudaFree(d);
+
+	return 0;
+}
+/*
+Terminal
+
+apr@C04L0803:~/Desktop$ nvcc -o summ sum.cu
+apr@C04L0803:~/Desktop$ ./summ
+Enter number of elements
+10
+83
+86
+77
+15
+93
+35
+86
+92
+49
+21
+fst = 0 83 snd = 1 86
+fst = 2 77 snd = 3 15
+fst = 4 93 snd = 5 35
+fst = 6 86 snd = 7 92
+fst = 8 49 snd = 9 21
+fst = 0 169 snd = 2 92
+fst = 4 128 snd = 6 178
+fst = 0 261 snd = 4 306
+fst = 0 567 snd = 8 70
+sum = 637
+apr@C04L0803:~/Desktop$ 
+
+*/
+
+
+AVERAGE
+#include<iostream>
+#include<stdio.h>
+#include<cuda.h>
+#include<math.h>
+
+#define SIZE 5
+
+using namespace std;
+
+__global__ void sum(int *input,int *n)
+{
+	int tid=threadIdx.x;
+	int num_of_threads=blockDim.x;
+	float tsize=(float)num_of_threads;
+
+	int step_size=1;
+	while(num_of_threads>0)
+	{
+		if(tid<num_of_threads)
+		{
+			int fst=tid*step_size*2;
+			int snd=fst+step_size;
+
+			if(snd<*n)
+			{
+				printf("fst = %d %d snd = %d %d\n",fst,input[fst],snd,input[snd]);
+				input[fst]+=input[snd];
+			}
+		}
+
+		step_size*=2;
+		if(num_of_threads!=1)
+		{
+			
+			tsize/=2;
+			num_of_threads=(int)ceil(tsize);
+	
+		}
+		else
+		{
+			num_of_threads=0;
+		}
+
+	}
+}
+
+int main()
+{
+
+	int count;
+	
+	cout<<"Enter number of elements\n";
+	cin>>count;
+	int *c=&count;
+	const int size=count*sizeof(int);
+	
+	int a[count];
+	for(int i=0;i<count;i++)
+	{
+		a[i]=rand()%100;
+	}
+
+	for(int i=0;i<count;i++)
+	{
+		cout<<a[i]<<endl;
+	}
+
+	int *d;
+	int *n;
+
+	cudaMalloc(&d,size);
+	cudaMalloc(&n,sizeof(int));
+	cudaMemcpy(d,a,size,cudaMemcpyHostToDevice);
+	cudaMemcpy(n,c,sizeof(int),cudaMemcpyHostToDevice);
+	if(count%2==0)
+	{
+		sum<<<1,count/2>>>(d,n);
+	}else
+	{
+		sum<<<1,(count/2)+1>>>(d,n);
+	}
+	int result;
+	cudaMemcpy(&result,d,sizeof(int),cudaMemcpyDeviceToHost);
+
+	cout<<"Avg = "<<(float)result/(float)count<<endl;
+	cudaFree(d);
+
+	return 0;
+}
+
+/*
+
+Terminal
+
+apr@C04L0803:~/Desktop$ nvcc -o avgg avg.cu
+apr@C04L0803:~/Desktop$ ./avgg
+Enter number of elements
+10
+83
+86
+77
+15
+93
+35
+86
+92
+49
+21
+fst = 0 83 snd = 1 86
+fst = 2 77 snd = 3 15
+fst = 4 93 snd = 5 35
+fst = 6 86 snd = 7 92
+fst = 8 49 snd = 9 21
+fst = 0 169 snd = 2 92
+fst = 4 128 snd = 6 178
+fst = 0 261 snd = 4 306
+fst = 0 567 snd = 8 70
+Avg = 63.7
+apr@C04L0803:~/Desktop$ 
+
+*/
+
+
+
