@@ -1,0 +1,291 @@
+MINIMUM
+
+#include<iostream>
+#include<stdio.h>
+#include<cuda.h>
+#include<math.h>
+
+#define SIZE 5
+
+using namespace std;
+
+__global__ void sum(int *input,int *n)
+{
+	int tid=threadIdx.x;
+	int num_of_threads=blockDim.x;
+	float tsize=(float)num_of_threads;
+
+	int step_size=1;
+	while(num_of_threads>0)
+	{
+		if(tid<num_of_threads)
+		{
+			int fst=tid*step_size*2;
+			int snd=fst+step_size;
+
+			if(snd<*n)
+			{
+				printf("fst = %d %d snd = %d %d\n",fst,input[fst],snd,input[snd]);
+
+				if(input[fst]>input[snd])
+				{
+					input[fst]=input[snd];
+				}
+			}
+		}
+
+		step_size*=2;
+		if(num_of_threads!=1)
+		{
+			
+			tsize/=2;
+			num_of_threads=(int)ceil(tsize);
+	
+		}
+		else
+		{
+			num_of_threads=0;
+		}
+
+	}
+}
+
+int main()
+{
+
+	int count;
+	
+	cout<<"Enter number of elements\n";
+	cin>>count;
+	int *c=&count;
+	const int size=count*sizeof(int);
+	
+	int a[count];
+	for(int i=0;i<count;i++)
+	{
+		a[i]=rand()%100;
+	}
+
+	for(int i=0;i<count;i++)
+	{
+		cout<<a[i]<<endl;
+	}
+
+	int *d;
+	int *n;
+
+	cudaMalloc(&d,size);
+	cudaMalloc(&n,sizeof(int));
+	cudaMemcpy(d,a,size,cudaMemcpyHostToDevice);
+	cudaMemcpy(n,c,sizeof(int),cudaMemcpyHostToDevice);
+	if(count%2==0)
+	{
+		sum<<<1,count/2>>>(d,n);
+	}else
+	{
+		sum<<<1,(count/2)+1>>>(d,n);
+	}
+	int result;
+	cudaMemcpy(&result,d,sizeof(int),cudaMemcpyDeviceToHost);
+
+	cout<<"Min = "<<result<<endl;
+	cudaFree(d);
+
+	return 0;
+}
+/*
+Terminal
+apr@C04L0803:~/Desktop$ nvcc -o mini min.cu
+apr@C04L0803:~/Desktop$ ./mini
+Enter number of elements
+20
+83
+86
+77
+15
+93
+35
+86
+92
+49
+21
+62
+27
+90
+59
+63
+26
+40
+26
+72
+36
+fst = 0 83 snd = 1 86
+fst = 2 77 snd = 3 15
+fst = 4 93 snd = 5 35
+fst = 6 86 snd = 7 92
+fst = 8 49 snd = 9 21
+fst = 10 62 snd = 11 27
+fst = 12 90 snd = 13 59
+fst = 14 63 snd = 15 26
+fst = 16 40 snd = 17 26
+fst = 18 72 snd = 19 36
+fst = 0 83 snd = 2 15
+fst = 4 35 snd = 6 86
+fst = 8 21 snd = 10 27
+fst = 12 59 snd = 14 26
+fst = 16 26 snd = 18 36
+fst = 0 15 snd = 4 35
+fst = 8 21 snd = 12 26
+fst = 0 15 snd = 8 21
+fst = 0 15 snd = 16 26
+Min = 15
+apr@C04L0803:~/Desktop$ 
+*/
+
+
+MAXIMUM
+#include<iostream>
+#include<stdio.h>
+#include<cuda.h>
+#include<math.h>
+
+#define SIZE 5
+
+using namespace std;
+
+__global__ void sum(int *input,int *n)
+{
+	int tid=threadIdx.x;
+	int num_of_threads=blockDim.x;
+	float tsize=(float)num_of_threads;
+
+	int step_size=1;
+	while(num_of_threads>0)
+	{
+		if(tid<num_of_threads)
+		{
+			int fst=tid*step_size*2;
+			int snd=fst+step_size;
+
+			if(snd<*n)
+			{
+				printf("fst = %d %d snd = %d %d\n",fst,input[fst],snd,input[snd]);
+
+				if(input[fst]<input[snd])
+				{
+					input[fst]=input[snd];
+				}
+			}
+		}
+
+		step_size*=2;
+		if(num_of_threads!=1)
+		{
+			
+			tsize/=2;
+			num_of_threads=(int)ceil(tsize);
+	
+		}
+		else
+		{
+			num_of_threads=0;
+		}
+
+	}
+}
+
+int main()
+{
+
+	int count;
+	
+	cout<<"Enter number of elements\n";
+	cin>>count;
+	int *c=&count;
+	const int size=count*sizeof(int);
+	
+	int a[count];
+	for(int i=0;i<count;i++)
+	{
+		a[i]=rand()%100;
+	}
+
+	for(int i=0;i<count;i++)
+	{
+		cout<<a[i]<<endl;
+	}
+
+	int *d;
+	int *n;
+
+	cudaMalloc(&d,size);
+	cudaMalloc(&n,sizeof(int));
+	cudaMemcpy(d,a,size,cudaMemcpyHostToDevice);
+	cudaMemcpy(n,c,sizeof(int),cudaMemcpyHostToDevice);
+	if(count%2==0)
+	{
+		sum<<<1,count/2>>>(d,n);
+	}else
+	{
+		sum<<<1,(count/2)+1>>>(d,n);
+	}
+	int result;
+	cudaMemcpy(&result,d,sizeof(int),cudaMemcpyDeviceToHost);
+
+	cout<<"Max = "<<result<<endl;
+	cudaFree(d);
+
+	return 0;
+}
+/*
+Terminal
+
+apr@C04L0803:~$ clear
+apr@C04L0803:~$ cd Desktop
+apr@C04L0803:~/Desktop$ nvcc -o maxi max.cu
+apr@C04L0803:~/Desktop$ ./maxi
+Enter number of elements
+20
+83
+86
+77
+15
+93
+35
+86
+92
+49
+21
+62
+27
+90
+59
+63
+26
+40
+26
+72
+36
+fst = 0 83 snd = 1 86
+fst = 2 77 snd = 3 15
+fst = 4 93 snd = 5 35
+fst = 6 86 snd = 7 92
+fst = 8 49 snd = 9 21
+fst = 10 62 snd = 11 27
+fst = 12 90 snd = 13 59
+fst = 14 63 snd = 15 26
+fst = 16 40 snd = 17 26
+fst = 18 72 snd = 19 36
+fst = 0 86 snd = 2 77
+fst = 4 93 snd = 6 92
+fst = 8 49 snd = 10 62
+fst = 12 90 snd = 14 63
+fst = 16 40 snd = 18 72
+fst = 0 86 snd = 4 93
+fst = 8 62 snd = 12 90
+fst = 0 93 snd = 8 90
+fst = 0 93 snd = 16 72
+Max = 93
+apr@C04L0803:~/Desktop$ 
+*/
+
