@@ -1,0 +1,305 @@
+Compile :
+mpic++ -o knn_mpi knn_mpi.cpp
+
+Run
+mpirun -np 20 ./knn_mpi
+
+*/
+
+#include<iostream>
+#include<math.h>
+#include<string.h>
+#include<fstream>
+#include<stdlib.h>
+#include<typeinfo>
+#include<mpi.h>
+
+using namespace std;
+
+//function to cast char to float
+double atof (const char* str);
+
+//function to find Euclidean Distance
+float euclidean(float ex1[1][4],float ex2[1][4]){
+	
+	float distance=0;
+	
+	for(int i=0;i<4;i++){
+	
+		//Sum of squares of distance
+		distance += pow((ex1[0][i]-ex2[0][i]),2);
+	}
+	//Sqrt of the sum
+	distance = sqrt(distance);
+	return distance;
+};
+
+string classify(float dist[][2], int K, string iris_data_raw[][5]){
+
+	//for(int i =0 ;i<150;i++)
+		//cout<<"class : "<<iris_data_raw[i][3]<<endl;
+	//Counter variables
+	int classOneCount = 0 ;
+	int classTwoCount =0 ;
+	int classThreeCount = 0;
+
+	//Variables to match class of examples
+	string classOne = "Iris-setosa";
+	string classTwo = "Iris-versicolor";
+	string classThree = "Iris-virginica";
+	
+	string result = "";
+
+	cout<<"Counting nearest classes"<<endl;
+	
+	for (int i=0;i<K;i++){
+		if(iris_data_raw[(int)dist[i][0]][4]==classOne){
+			classOneCount++;
+		}
+		else if(iris_data_raw[(int)dist[i][0]][4]==classTwo){
+			classTwoCount++;
+		}
+		else
+			classThreeCount++;
+	}
+	
+	//Find Class with Max Count
+	if(classOneCount>classTwoCount){
+		if(classOneCount>classThreeCount)
+			result = classOne;
+		else
+			result = classThree;
+	}
+	else
+	{
+		if(classTwoCount>classThreeCount)
+			result = classTwo;
+		else
+			result = classThree;
+	}
+	return result;
+}
+
+void process(int my_id, int K, int examples[20], string iris_data_raw[][5], float iris_data[][4]){
+
+	
+	int example_number;			//example to be classified by each process
+	
+	example_number = examples[my_id];
+	
+	float distances[150][2]; 
+	//column 1 stores index of example necessary to retrieve class-label in classify() function, column2 stores Euclidean Distance
+	
+	for(int i=0;i<150;i++){
+		distances[i][0]=i;
+		if(i==example_number){
+			//Distance to self set to high number to avoid bias in output
+		
+			distances[i][1]=1000;
+		}
+		else
+			distances[i][1]=euclidean(&iris_data[example_number],&iris_data[i]);
+	}
+
+
+	//Bubble sort Distances
+	
+	float swap_distance;	
+	float swap_index;
+	for (int i =0;i<150;i++){
+		for (int j=0;j<150-i-1;j++){
+			if(distances[j][1]>distances[j+1][1]){
+				swap_distance = distances[j][1];
+				swap_index = distances[j][0];
+				distances[j][1] = distances[j+1][1];
+				distances[j][0] = distances[j+1][0];
+				distances[j+1][1] = swap_distance;
+				distances[j+1][0] = swap_index;
+			}
+		}
+	}
+	cout<<"Thread : "<<my_id<<" | The example "<<examples[my_id]<<" belongs to the class : "<<classify(distances,K,iris_data_raw)<<endl;
+	
+}
+
+int main(int argc, char **argv){	
+	
+	
+	string iris_data_raw[150][5];		//stores char values read from csv
+	float iris_data[150][4];		//char values cast to float
+	
+	ifstream iris_file;
+		
+	int K=13;				//K=sqrt(N), here N = 150
+	int examples[20];			//20 random examples to be classified
+	
+	for(int i=0;i<20;i++){
+		examples[i]=rand()%150;
+	}
+	
+	iris_file.open("iris.csv");
+		
+	while(!iris_file.eof()){
+		for(int i =0;i<150;i++){
+			for(int j=0 ; j<5;j++){
+				getline(iris_file,iris_data_raw[i][j],',');
+			}
+		}
+	}
+	
+	//Add missing entry
+	iris_data_raw[0][0] = "5.1";	
+	
+	int my_id,ierr,num_procs;
+	
+	const clock_t begin_time = clock();
+	
+	MPI_Status stat;
+	ierr = MPI_Init(&argc, &argv);
+           /* find out MY process ID, and how many processes were started. */
+	ierr = MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
+	ierr = MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+		
+	
+	if(my_id==0){
+	//Master
+		
+		//convert to float
+		
+		char parse_to_float[3];
+		
+		for(int i =0;i<150;i++){
+			for(int j=0 ; j<4;j++){
+				strcpy(parse_to_float,iris_data_raw[i][j].c_str());
+				iris_data[i][j] = atof(parse_to_float);		
+			}
+		}
+
+	
+		for(int i =1;i<num_procs;i++){
+			cout<<"Sending data to "<<i<<endl;
+			MPI_Send(iris_data,600,MPI_FLOAT,i, 0, MPI_COMM_WORLD);
+		}
+	process(my_id,K,examples,iris_data_raw,iris_data);
+	
+	}
+	else {
+
+	float iris_data_recvd[150][4];
+	
+	
+	MPI_Recv(iris_data_recvd, 600, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, &stat);
+	
+	cout<<"Recevied Data by "<<my_id<<endl;
+	
+	process(my_id,K,examples,iris_data_raw,iris_data_recvd);	
+			
+	}
+	
+	ierr=MPI_Finalize();	
+	
+	cout<<"Time Taken by "<<my_id<<" : "<<float( clock () - begin_time ) /  CLOCKS_PER_SEC<<endl;	
+				
+	return 0;
+}
+
+
+
+Sending data to 1
+Sending data to 2
+Sending data to 3
+Sending data to 4
+Sending data to 5
+Sending data to 6
+Sending data to 7
+Sending data to 8
+Sending data to 9
+Sending data to 10
+Sending data to 11
+Sending data to 12
+Sending data to 13
+Sending data to 14
+Sending data to 15
+Sending data to 16
+Sending data to 17
+Sending data to 18
+Sending data to 19
+Counting nearest classes
+Thread : 0 | The example 133 belongs to the class : Iris-virginica
+Recevied Data by 1
+Counting nearest classes
+Thread : 1 | The example 136 belongs to the class : Iris-virginica
+Recevied Data by 2
+Counting nearest classes
+Thread : 2 | The example 27 belongs to the class : Iris-setosa
+Recevied Data by 3
+Counting nearest classes
+Thread : 3 | The example 115 belongs to the class : Iris-virginica
+Recevied Data by 4
+Counting nearest classes
+Thread : 4 | The example 143 belongs to the class : Iris-virginica
+Recevied Data by 5
+Counting nearest classes
+Thread : 5 | The example 85 belongs to the class : Iris-versicolor
+Recevied Data by 6
+Counting nearest classes
+Thread : 6 | The example 136 belongs to the class : Iris-virginica
+Recevied Data by 7
+Counting nearest classes
+Thread : 7 | The example 42 belongs to the class : Iris-setosa
+Recevied Data by 8
+Counting nearest classes
+Thread : 8 | The example 99 belongs to the class : Iris-versicolor
+Recevied Data by 9
+Counting nearest classes
+Thread : 9 | The example 121 belongs to the class : Iris-virginica
+Recevied Data by 10
+Counting nearest classes
+Thread : 10 | The example 62 belongs to the class : Iris-versicolor
+Recevied Data by 12
+Counting nearest classes
+Thread : 12 | The example 140 belongs to the class : Iris-virginica
+Recevied Data by 13
+Counting nearest classes
+Recevied Data by 14
+Counting nearest classes
+Thread : 14 | The example 113 belongs to the class : Iris-virginica
+Recevied Data by 15
+Counting nearest classes
+Thread : 15 | The example 76 belongs to the class : Iris-versicolor
+Recevied Data by 16
+Counting nearest classes
+Thread : 16 | The example 90 belongs to the class : Iris-versicolor
+Recevied Data by 17
+Counting nearest classes
+Thread : 17 | The example 126 belongs to the class : Iris-versicolor
+Recevied Data by 18
+Recevied Data by 19
+Counting nearest classes
+Thread : 19 | The example 136 belongs to the class : Iris-virginica
+Thread : 13 | The example 109 belongs to the class : Iris-virginica
+Recevied Data by 11
+Counting nearest classes
+Thread : 18 | The example 22 belongs to the class : Iris-setosa
+Counting nearest classes
+Thread : 11 | The example 127 belongs to the class : Iris-virginica
+Time Taken by 1 : 0.025222
+Time Taken by 3 : 0.024066
+Time Taken by 6 : 0.023028
+Time Taken by 10 : 0.022457
+Time Taken by 15 : 0.022015
+Time Taken by 16 : 0.017773
+Time Taken by 2 : 0.024499
+Time Taken by 9 : 0.022075
+Time Taken by 4 : 0.023326
+Time Taken by 14 : 0.021493
+Time Taken by 5 : 0.022787
+Time Taken by 8 : 0.02152
+Time Taken by 12 : 0.021324
+Time Taken by 7 : 0.022408
+Time Taken by 18 : 0.018155
+Time Taken by 19 : 0.020757
+Time Taken by 0 : 0.030838
+Time Taken by 17 : 0.020849
+Time Taken by 13 : 0.021461
+Time Taken by 11 : 0.023353
