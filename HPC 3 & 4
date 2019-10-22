@@ -1,0 +1,345 @@
+MAXIMUM CUDA
+
+#include <cuda.h>
+#include <stdio.h>
+#include <time.h>
+
+#define SIZE 10
+
+__global__ void max(int *a, int *c)	// kernel function definition
+{
+	int i = threadIdx.x;					// initialize i to thread ID
+
+	*c = a[0];
+
+	if (a[i] > *c)
+	{
+		*c = a[i];
+	}
+
+}
+
+int main()
+{
+	int i;
+	srand(time(NULL));		//makes use of the computer's internal clock to control the choice of the seed
+
+	int a[SIZE];
+	int c;
+
+	int *dev_a, *dev_c;		//GPU / device parameters
+
+	cudaMalloc((void **)&dev_a, SIZE * sizeof(int));		//assign memory to parameters on GPU from CUDA runtime API
+	cudaMalloc((void **)&dev_c, SIZE * sizeof(int));
+
+	printf("Enter the elements:\n");
+
+
+	for (int i = 0; i<SIZE; i++)
+	{
+		printf("\n");
+		scanf("%d", a[i]);
+	}
+
+
+
+	for (i = 0; i < SIZE; i++)
+	{
+		printf("%d", a[i]);			// input the numbers
+	}
+
+	cudaMemcpy(dev_a, a, SIZE * sizeof(int), cudaMemcpyHostToDevice);		//copy the array from CPU to GPU
+	max << <1, SIZE >> >(dev_a, dev_c);										// call kernel function <<<number of blocks, number of threads
+	cudaMemcpy(&c, dev_c, SIZE * sizeof(int), cudaMemcpyDeviceToHost);		// copy the result back from GPU to CPU
+
+	printf("\nMax =  %d ", c);
+
+	cudaFree(dev_a);		// Free the allocated memory
+	cudaFree(dev_c);
+	printf("");
+
+	return 0;
+}
+
+---------------------------------------------------------------------------
+
+MINIMUM CUDA
+
+#include <cuda.h>
+#include <stdio.h>
+#include <time.h>
+
+#define SIZE 10
+
+__global__ void min(int *a, int *c)	// kernel function definition
+{
+	int i = threadIdx.x;					// initialize i to thread ID
+
+	*c = a[0];
+
+	if (a[i] < *c)
+	{
+		*c = a[i];
+	}
+
+}
+
+int main()
+{
+	int i;
+	srand(time(NULL));		//makes use of the computer's internal clock to control the choice of the seed
+
+	int a[SIZE];
+	int c;
+
+	int *dev_a, *dev_c;		//GPU / device parameters
+
+	cudaMalloc((void **)&dev_a, SIZE * sizeof(int));		//assign memory to parameters on GPU from CUDA runtime API
+	cudaMalloc((void **)&dev_c, SIZE * sizeof(int));
+
+	printf("Enter the elements:\n");
+
+
+	for (int i = 0; i<SIZE; i++)
+	{
+		a[i] = rand()%10;
+	}
+
+
+
+	for (i = 0; i < SIZE; i++)
+	{
+		printf("\n%d", a[i]);			// input the numbers
+	}
+
+	cudaMemcpy(dev_a, a, SIZE * sizeof(int), cudaMemcpyHostToDevice);		//copy the array from CPU to GPU
+	min << <1, SIZE >> >(dev_a, dev_c);										// call kernel function <<<number of blocks, number of threads
+	cudaMemcpy(&c, dev_c, SIZE * sizeof(int), cudaMemcpyDeviceToHost);		// copy the result back from GPU to CPU
+
+	printf("\nMin =  %d ", c);
+
+	cudaFree(dev_a);		// Free the allocated memory
+	cudaFree(dev_c);
+	printf("");
+
+	return 0;
+}
+---------------------------------------------------------------------------
+ARITHMETIC MEAN
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+ 
+// CUDA kernel. Each thread takes care of one element of c
+__global__ void vecAdd(double *a, double *b, double *c, int n)
+{
+    // Get our global thread ID
+    int id = blockIdx.x*blockDim.x+threadIdx.x;			// get global index
+ 
+    // Make sure we do not go out of bounds
+    if (id < n)
+        c[id] = a[id] + b[id];
+}
+ 
+int main( )
+{
+    
+    //int n = 100000;
+	int n=5;			// Size of vectors
+ 
+    
+    double *h_a;		// Host input vector
+    double *h_b;		// Host input vector
+    
+	
+    double *h_c;		//Host output vector
+ 
+    
+    double *d_a;		// Device input vector
+    double *d_b;		// Device input vector
+   
+    double *d_c;		 //Device output vector
+ 
+   
+    size_t bytes = n*sizeof(double);		 // Size, in bytes, of each vector
+ 
+    // Allocate memory for each vector on host
+    h_a = (double*)malloc(bytes);
+    h_b = (double*)malloc(bytes);
+    h_c = (double*)malloc(bytes);
+ 
+    // Allocate memory for each vector on GPU
+    cudaMalloc(&d_a, bytes);
+    cudaMalloc(&d_b, bytes);
+    cudaMalloc(&d_c, bytes);
+ 
+    int i;
+	
+    // Initialize vectors on host
+    for( i = 0; i < n; i++ ) {
+       
+	h_a[i]=i;
+	h_b[i]=i;
+        
+    }
+ 
+    // Copy host vectors to device
+    cudaMemcpy( d_a, h_a, bytes, cudaMemcpyHostToDevice);
+    cudaMemcpy( d_b, h_b, bytes, cudaMemcpyHostToDevice);
+ 
+    int blockSize, gridSize;
+ 
+    // Number of threads in each thread block
+    blockSize = 1024;
+ 
+    // Number of thread blocks in grid
+    gridSize = (int)ceil((float)n/blockSize);
+ 
+    // Execute the kernel
+    vecAdd<<<gridSize, blockSize>>>(d_a, d_b, d_c, n);
+ 
+    // Copy array back to host
+    cudaMemcpy( h_c, d_c, bytes, cudaMemcpyDeviceToHost );
+ 
+    // Sum up vector c and print result divided by n, this should equal 1 within error
+    double sum = 0;
+    for(i=0; i<n; i++)
+        sum += h_c[i];
+    printf("Average mean of 2 vectors: %f\n", sum/n);
+ 
+    // Release device memory
+    cudaFree(d_a);
+    cudaFree(d_b);
+    cudaFree(d_c);
+ 
+    // Release host memory
+    free(h_a);
+    free(h_b);
+    free(h_c);
+ 
+    return 0;
+}
+
+/*
+Output:
+
+Average mean of 2 vectors: 4.000000
+*/
+
+---------------------------------------------------------------------------
+
+STANDARD DEVIATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+ 
+// CUDA kernel. Each thread takes care of one element of c
+__global__ void vecAdd(int *a, int *c, int n)
+{
+    // Get our global thread ID
+    int id = blockIdx.x*blockDim.x+threadIdx.x;
+   // c[id]=0;
+    // Make sure we do not go out of bounds
+    if (id < n)
+        *c+= a[id];
+   // printf("\n%d", c[id]);
+}
+ 
+int main( int argc, char* argv[] )
+{
+    // Size of vectors
+    // int n = 100000;
+	int n=5;
+ const int size = n * sizeof(int);  
+    // Host input vectors
+    int *h_a;
+   // double *h_b;
+    //Host output vector
+    int *h_c;
+ 
+    // Device input vectors
+    int *d_a;
+    //double *d_b;
+    //Device output vector
+    int *d_c;
+    int dev=0;
+    // Size, in bytes, of each vector
+    size_t bytes = n*sizeof(double);
+ 
+    // Allocate memory for each vector on host
+    //h_a = (int*)malloc(bytes);
+    //h_b = (double*)malloc(bytes);
+    h_c = (int*)malloc(bytes);
+ 
+    // Allocate memory for each vector on GPU
+    cudaMalloc(&d_a, bytes);
+   // cudaMalloc(&d_b, bytes);
+    cudaMalloc(&d_c, bytes);
+ 
+    int i;
+    printf("Input array");
+    // Initialize vectors on host
+    /*for( i = 0; i < n; i++ ) {
+        // h_a[i] = sin(i)*sin(i);
+        //printf("\n",i); 
+	h_a[i]=i;
+	//printf("\n%d", h_a[i]);
+	//h_b[i]=i;
+        //h_b[i] = cos(i)*cos(i);
+    }*/
+   
+   int a[]= {0, 1, 2, 3, 4};
+   
+   cudaMalloc(&h_a, size);
+ 
+    // Copy host vectors to device
+    cudaMemcpy( h_a, a, bytes, cudaMemcpyHostToDevice);
+    cudaMemcpy( d_c, &dev, sizeof(int), cudaMemcpyHostToDevice);
+//    cudaMemcpy( d_b, h_b, bytes, cudaMemcpyHostToDevice);
+ 
+    int blockSize, gridSize;
+ 
+    // Number of threads in each thread block
+    blockSize = 2;
+ 
+    // Number of thread blocks in grid
+    gridSize = (int)ceil((float)n/blockSize);
+ 
+    // Execute the kernel
+    vecAdd<<<gridSize, blockSize>>>(d_a,d_c,n);
+      int result;
+    // Copy array back to host
+    cudaMemcpy( &result,d_c, sizeof(int), cudaMemcpyDeviceToHost );
+ 
+    // Sum up vector c and print result divided by n, this should equal 1 within error
+    double sum = 0;
+    //for(i=0; i<n; i++)
+      //  sum += h_c[i];
+     
+    printf("final result: %f\n",result );
+
+   // vecdev<<<gridSize, blockSize>>>(d_a,d_c, n);
+ 
+    // Release device memory
+    cudaFree(d_a);
+    //cudaFree(d_b);
+    cudaFree(d_c);
+ 
+    // Release host memory
+    free(h_a);
+    //free(h_b);
+    free(h_c);
+ 
+    return 0;
+}
+
+
+/*
+Output:
+
+Input arrayfinal result: 0.000000
+*/
+
+
